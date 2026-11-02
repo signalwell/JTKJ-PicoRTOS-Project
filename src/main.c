@@ -28,6 +28,16 @@ enum state programState = WAITING;
 // Exercise 3: Global variable for ambient light
 uint32_t ambientLight;
 
+// Global variables for acceleration
+
+// Acceleration along the x-axis. Values far from 0 indicate the device is turned on its long side.
+float ax;
+// Acceleration along the y-axis. Values far from 0 indicate the device is turned on its short side.
+float ay;
+// Acceleration along the z-axis. Values close to 0 indicate the device is turned on its side.
+float az;
+
+
 static void btn_fxn(uint gpio, uint32_t eventMask) {
     // Tehtävä 1: Vaihda LEDin tila käyttämällä TKJHAT SDK:n sopivaa funktiota.
     // Exercise 1: Toggle the LED using the appropriate function from the TKJHAT SDK.
@@ -51,6 +61,13 @@ static void sensor_task(void *arg){
         // tight_loop_contents(); 
 
         ambientLight = veml6030_read_light();
+
+        // Reading accelerometer data
+        if (ICM42670_read_sensor_data(&ax, &ay, &az, NULL, NULL, NULL, NULL) < 0) {
+            // If an error occurs
+
+        }
+
 
         programState = DATA_READY;
 
@@ -93,7 +110,8 @@ static void print_task(void *arg){
 
         printf("Ambient light: %lu lux\n", ambientLight);
         
-
+        // DEBUG : print accelerometer
+        printf("ax: %f, ay: %f, az: %f\n", ax, ay, az);
 
         
         // Exercise 4. Use usb_serial_print() instead of printf() for debug output
@@ -170,7 +188,17 @@ int main() {
     init_red_led();
     gpio_set_irq_enabled_with_callback(BUTTON1, GPIO_IRQ_EDGE_FALL, true, btn_fxn);
 
-
+    // Initialize the IMU
+    if (init_ICM42670() < 0) {
+        // If an error occurs
+        printf("IMU initialization failed\n");
+        return 0;
+    }
+    if (ICM42670_start_with_default_values() < 0)
+    {
+        // If an error occurs
+        printf("IMU initialization failed (ICM42670_start_with_default_values)\n");
+    }
     
     
     TaskHandle_t hSensorTask, hPrintTask, hUSB = NULL;
