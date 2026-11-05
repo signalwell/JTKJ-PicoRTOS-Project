@@ -24,6 +24,13 @@
 enum state { WAITING=1, DATA_READY};
 enum state programState = WAITING;
 
+typedef enum morseChar {
+    dash,
+    dot,
+    space,
+    none
+} MorseChar;
+
 // Tehtävä 3: Valoisuuden globaali muuttuja
 // Exercise 3: Global variable for ambient light
 uint32_t ambientLight;
