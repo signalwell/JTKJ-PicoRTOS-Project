@@ -47,20 +47,20 @@ static void btn_fxn(uint gpio, uint32_t eventMask)
 {
     if (gpio == BUTTON1)
     {
-        printf("Button 1 pressed\n");
+        printf("__Button 1 pressed__\n");
         programState = READ_SENSOR;
     }
     if (gpio == BUTTON2) {
-        printf("Button 2 pressed\n");
+        printf("__Button 2 pressed__\n");
         programState = WRITE_SPACE;
     }
 }
 
-static void btn2_fxn(uint gpio, uint32_t eventMask)
+/*static void btn2_fxn(uint gpio, uint32_t eventMask)
 {
     printf("Button 2 pressed\n");
     programState = WRITE_SPACE;
-}
+}*/
 
 static void sensor_task(void *arg)
 {
@@ -113,6 +113,24 @@ int getMorseChar(float ax_, float ay_, float az_)
     }
 }
 
+// Clears the morse string
+void clearMorseString() {
+    for (int i = 0; i < 100; i++) {
+        morseString[i] = 0;
+    }
+    morseIndex = 0;
+}
+
+// Prints the full morse code
+void printMorse() {
+    morseString[morseIndex - 1] = '\n';
+    morseString[morseIndex] = '\0';
+
+    printf("Morse code: %s", morseString);
+
+    clearMorseString();
+}
+
 static void print_task(void *arg)
 {
     (void)arg;
@@ -124,28 +142,27 @@ static void print_task(void *arg)
             int morseChar = getMorseChar(ax, ay, az);
             if (morseChar != 0)
             {
-                printf("%c \n", morseChar);
+                printf("__%c__\n", morseChar);
                 morseString[morseIndex] = morseChar;
                 morseIndex++;
-                printf("Full morse: %s\n", morseString);
+                //printf("Full morse: %s\n", morseString);
             }
         }
         else if (programState == WRITE_SPACE)
         {
             morseString[morseIndex] = ' ';
             morseIndex++;
-            printf("Full morse: %s\n", morseString);
+            printf("__space__\n");
+            //printf("Full morse: %s\n", morseString);
             if (morseString[morseIndex - 1] == ' ' && morseString[morseIndex - 2] == ' ' && morseString[morseIndex - 3] == ' ')
             {
-                morseString[morseIndex - 1] = '\n';
-                morseString[morseIndex] = '\0';
-                printf("Morse code: %s", morseString);
+                printMorse();
             }
         }
 
         else
         {
-            printf("Waiting for data...\n");
+            //printf("Waiting for data...\n");
         }
 
         programState = WAITING;
