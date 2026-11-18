@@ -10,14 +10,10 @@
 
 #include "tkjhat/sdk.h"
 
-// Exercise 4. Include the libraries necessaries to use the usb-serial-debug, and tinyusb
-// Tehtävä 4 . Lisää usb-serial-debugin ja tinyusbin käyttämiseen tarvittavat kirjastot.
-
 #define DEFAULT_STACK_SIZE 2048
 #define CDC_ITF_TX 1
 
-// Tehtävä 3: Tilakoneen esittely Add missing states.
-// Exercise 3: Definition of the state machine. Add missing states.
+// Definition of the state machine
 enum state
 {
     WAITING = 1,
@@ -33,9 +29,13 @@ enum state programState = WAITING;
     none
 } MorseChar; */
 
-// Global variables for acceleration
-char morseString[100];
+// String containing the last 3 characters of the morse code. Used for determining when the message ends.
+char morseString[3];
+// Index of the next morse character in morseString
 int morseIndex = 0;
+
+// Global variables for acceleration
+
 // Acceleration along the x-axis. Values far from 0 indicate the device is turned on its long side.
 float ax;
 // Acceleration along the y-axis. Values far from 0 indicate the device is turned on its short side.
@@ -43,13 +43,14 @@ float ay;
 // Acceleration along the z-axis. Values close to 0 indicate the device is turned on its side.
 float az;
 
+// Interrupt handler function for both buttons
 static void btn_fxn(uint gpio, uint32_t eventMask)
 {
-    if (gpio == BUTTON1)
+    if (gpio == BUTTON1) // Runs when button 1 is pressed
     {
         programState = READ_SENSOR;
     }
-    if (gpio == BUTTON2) {
+    if (gpio == BUTTON2) { // Runs when button 2 is pressed
         programState = WRITE_SPACE;
     }
 }
@@ -63,6 +64,8 @@ static void btn_fxn(uint gpio, uint32_t eventMask)
 static void sensor_task(void *arg)
 {
     (void)arg;
+
+    // Unused variables for gyro and temperature (necessary for reading sensor data)
     float gx, gy, gz, t;
 
     init_veml6030();
@@ -95,6 +98,10 @@ static void sensor_task(void *arg)
     }
 }
 
+// Returns morse character based on most recent accelerometer data.
+// If the device is turned on its long side, returns a dash,
+// if the device is turned on its short side, returns a dot,
+// otherwise returns 0, which does not get turned into morse code.
 int getMorseChar(float ax_, float ay_, float az_)
 {
     float threshold = 0.2; // Define a threshold value for determining the Morse code character
@@ -112,23 +119,31 @@ int getMorseChar(float ax_, float ay_, float az_)
     }
 }
 
+// Increments morse index
+void incrementMorseIndex()  {
+    morseIndex++;
+    if (morseIndex >= 3) {
+        morseIndex = 0;
+    }
+}
+
 // Clears the morse string
 void clearMorseString() {
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 3; i++) {
         morseString[i] = 0;
     }
     morseIndex = 0;
 }
 
-// Prints the full morse code
-void printMorse() {
+// No longer used
+/*void printMorse() {
     morseString[morseIndex - 1] = '\n';
     morseString[morseIndex] = '\0';
 
     printf("Morse code: %s", morseString);
 
     clearMorseString();
-}
+}*/
 
 static void print_task(void *arg)
 {
@@ -136,31 +151,38 @@ static void print_task(void *arg)
 
     while (1)
     {
-        if (programState == READ_SENSOR)
+        if (programState == READ_SENSOR) // If button 1 was pressed
         {
             //printf("__B1__");
             blink_led(1);
             int morseChar = getMorseChar(ax, ay, az);
-            if (morseChar != 0)
+            if (morseChar != 0) // If most recent accelerometer data matches a valid position
             {
                 printf("%c", morseChar);
+                // Add the morse character to the string
                 morseString[morseIndex] = morseChar;
-                morseIndex++;
+                incrementMorseIndex();
                 //printf("Full morse: %s\n", morseString);
             }
             programState = WAITING;
         }
-        else if (programState == WRITE_SPACE)
+        else if (programState == WRITE_SPACE) // If button 2 was pressed
         {
             //printf("__B2__");
+            // Add a space to the string
             morseString[morseIndex] = ' ';
-            morseIndex++;
+            incrementMorseIndex();
             printf(" ");
             //printf("Full morse: %s\n", morseString);
-            if (morseIndex >= 3 && morseString[morseIndex - 1] == ' ' && morseString[morseIndex - 2] == ' ' && morseString[morseIndex - 3] == ' ')
+
+            // If 3 spaces at the end of the string
+            if (morseString[0] == ' ' && morseString[1] == ' ' && morseString[2] == ' ')
             {
                 //printMorse();
+
+                // End the message and clear the string containing 3 last characters
                 printf("\n");
+                clearMorseString();
             }
             programState = WAITING;
         }
@@ -200,12 +222,15 @@ int main()
     init_hat_sdk();
     sleep_ms(300); // Wait some time so initialization of USB and hat is done.
 
+    // Initialize the buttons and assign their interrupt handler
+
     init_button1();
     gpio_set_irq_enabled_with_callback(BUTTON1, GPIO_IRQ_EDGE_FALL, true, btn_fxn);
 
     init_button2();
     gpio_set_irq_enabled_with_callback(BUTTON2, GPIO_IRQ_EDGE_FALL, true, btn_fxn);
-
+    
+    // Initialize LED
     init_red_led();
 
     // Initialize the IMU
