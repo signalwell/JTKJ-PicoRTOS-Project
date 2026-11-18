@@ -47,11 +47,9 @@ static void btn_fxn(uint gpio, uint32_t eventMask)
 {
     if (gpio == BUTTON1)
     {
-        printf("__Button 1 pressed__\n");
         programState = READ_SENSOR;
     }
     if (gpio == BUTTON2) {
-        printf("__Button 2 pressed__\n");
         programState = WRITE_SPACE;
     }
 }
@@ -65,6 +63,7 @@ static void btn_fxn(uint gpio, uint32_t eventMask)
 static void sensor_task(void *arg)
 {
     (void)arg;
+    float gx, gy, gz, t;
 
     init_veml6030();
 
@@ -72,7 +71,7 @@ static void sensor_task(void *arg)
     {
 
         // Reading accelerometer data
-        if (ICM42670_read_sensor_data(&ax, &ay, &az, NULL, NULL, NULL, NULL) < 0)
+        if (ICM42670_read_sensor_data(&ax, &ay, &az, &gx, &gy, &gz, &t) < 0)
         {
             // If an error occurs
         }
@@ -139,33 +138,37 @@ static void print_task(void *arg)
     {
         if (programState == READ_SENSOR)
         {
+            //printf("__B1__");
+            blink_led(1);
             int morseChar = getMorseChar(ax, ay, az);
             if (morseChar != 0)
             {
-                printf("__%c__\n", morseChar);
+                printf("%c", morseChar);
                 morseString[morseIndex] = morseChar;
                 morseIndex++;
                 //printf("Full morse: %s\n", morseString);
             }
+            programState = WAITING;
         }
         else if (programState == WRITE_SPACE)
         {
+            //printf("__B2__");
             morseString[morseIndex] = ' ';
             morseIndex++;
-            printf("__space__\n");
+            printf(" ");
             //printf("Full morse: %s\n", morseString);
-            if (morseString[morseIndex - 1] == ' ' && morseString[morseIndex - 2] == ' ' && morseString[morseIndex - 3] == ' ')
+            if (morseIndex >= 3 && morseString[morseIndex - 1] == ' ' && morseString[morseIndex - 2] == ' ' && morseString[morseIndex - 3] == ' ')
             {
-                printMorse();
+                //printMorse();
+                printf("\n");
             }
+            programState = WAITING;
         }
 
         else
         {
             //printf("Waiting for data...\n");
         }
-
-        programState = WAITING;
 
         // Do not remove this
         vTaskDelay(pdMS_TO_TICKS(1000));
