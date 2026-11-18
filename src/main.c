@@ -176,7 +176,7 @@ static void print_task(void *arg)
             //printf("Full morse: %s\n", morseString);
 
             // If 3 spaces at the end of the string
-            if (morseString[0] == ' ' && morseString[1] == ' ' && morseString[2] == ' ')
+            if (morseString[(morseIndex + 1) % 3] == ' ' && morseString[(morseIndex + 2) % 3] == ' ')
             {
                 //printMorse();
 
@@ -229,7 +229,7 @@ int main()
 
     init_button2();
     gpio_set_irq_enabled_with_callback(BUTTON2, GPIO_IRQ_EDGE_FALL, true, btn_fxn);
-    
+
     // Initialize LED
     init_red_led();
 
