@@ -133,7 +133,7 @@ static void print_task(void *arg)
         {
             //printf("__B2__");
 
-            // If 3 spaces at the end of the string
+            // If 3 spaces would be at the end of the string (check using remainder)
             if (morseString[(morseIndex + 1) % 3] == ' ' && morseString[(morseIndex + 2) % 3] == ' ')
             {
                 // End the message and clear the string containing 3 last characters
@@ -200,12 +200,13 @@ int main()
     {
         // If an error occurs
         printf("IMU initialization failed\n");
-        return 0;
+        return 0; // Program is closed
     }
     if (ICM42670_start_with_default_values() < 0)
     {
         // If an error occurs
         printf("IMU initialization failed (ICM42670_start_with_default_values)\n");
+        return 0; // Program is closed
     }
 
     TaskHandle_t hSensorTask, hPrintTask, hUSB = NULL;
