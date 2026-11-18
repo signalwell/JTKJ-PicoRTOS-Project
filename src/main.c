@@ -22,13 +22,6 @@ enum state
 };
 enum state programState = WAITING;
 
-/* typedef enum morseChar {
-    dash,
-    dot,
-    space,
-    none
-} MorseChar; */
-
 // String containing the last 3 characters of the morse code. Used for determining when the message ends.
 char morseString[3];
 // Index of the next morse character in morseString
@@ -55,12 +48,6 @@ static void btn_fxn(uint gpio, uint32_t eventMask)
     }
 }
 
-/*static void btn2_fxn(uint gpio, uint32_t eventMask)
-{
-    printf("Button 2 pressed\n");
-    programState = WRITE_SPACE;
-}*/
-
 static void sensor_task(void *arg)
 {
     (void)arg;
@@ -78,20 +65,6 @@ static void sensor_task(void *arg)
         {
             // If an error occurs
         }
-
-        // az ~ -1.0 and ax & ay ~ 0 when the device is flat
-        /*         if (ax > 0.5 && ax < -0.5) {
-                    printf("Device is turned on its long side\n");
-                } else if (ay > 0.5 && ay < -0.5) {
-                    printf("Device is turned on its short side\n");
-                } else if (az < 0.5 && az > -0.5) {
-                    printf("Device is turned on its side\n");
-                } else {
-                    printf("Device is flat\n");
-                }
-         */
-
-        // programState = DATA_READY;
 
         // Do not remove this
         vTaskDelay(pdMS_TO_TICKS(500));
@@ -135,16 +108,6 @@ void clearMorseString() {
     morseIndex = 0;
 }
 
-// No longer used
-/*void printMorse() {
-    morseString[morseIndex - 1] = '\n';
-    morseString[morseIndex] = '\0';
-
-    printf("Morse code: %s", morseString);
-
-    clearMorseString();
-}*/
-
 static void print_task(void *arg)
 {
     (void)arg;
@@ -173,8 +136,6 @@ static void print_task(void *arg)
             // If 3 spaces at the end of the string
             if (morseString[(morseIndex + 1) % 3] == ' ' && morseString[(morseIndex + 2) % 3] == ' ')
             {
-                //printMorse();
-
                 // End the message and clear the string containing 3 last characters
                 printf("\n");
                 clearMorseString();
