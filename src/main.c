@@ -169,11 +169,6 @@ static void print_task(void *arg)
         else if (programState == WRITE_SPACE) // If button 2 was pressed
         {
             //printf("__B2__");
-            // Add a space to the string
-            morseString[morseIndex] = ' ';
-            incrementMorseIndex();
-            printf(" ");
-            //printf("Full morse: %s\n", morseString);
 
             // If 3 spaces at the end of the string
             if (morseString[(morseIndex + 1) % 3] == ' ' && morseString[(morseIndex + 2) % 3] == ' ')
@@ -183,6 +178,12 @@ static void print_task(void *arg)
                 // End the message and clear the string containing 3 last characters
                 printf("\n");
                 clearMorseString();
+            } else {
+                // Add a space to the string
+                //printf("Full morse: %s\n", morseString);
+                morseString[morseIndex] = ' ';
+                incrementMorseIndex();
+                printf(" ");
             }
             programState = WAITING;
         }
