@@ -1,4 +1,8 @@
 
+// Point distribution: Ossi 3p, Akseli 3p
+// We did all the work together during exercises, 
+//  so there is no separation of tasks provided
+
 #include <stdio.h>
 #include <string.h>
 
