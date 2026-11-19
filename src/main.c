@@ -71,7 +71,7 @@ static void sensor_task(void *arg)
         }
 
         // Do not remove this
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(300));
     }
 }
 
@@ -159,7 +159,7 @@ static void print_task(void *arg)
         }
 
         // Do not remove this
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(300));
     }
 }
 
